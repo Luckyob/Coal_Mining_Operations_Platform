@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime, timezone
@@ -15,6 +17,8 @@ app = FastAPI(
     redoc_url=None,
     openapi_url=None,
 )
+
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 
 app.mount(
@@ -1187,6 +1191,7 @@ footer {{
     }}
 }}
 </style>
+   <link rel="stylesheet" href="/static/app.css">
 </head>
 
 <body>
@@ -1430,7 +1435,7 @@ footer {{
 
     </div>
 </footer>
-
+   <script src="/static/app.js"></script>
 </body>
 </html>
 """
