@@ -3,6 +3,9 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime, timezone
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+
 
 app = FastAPI(
     title="MineCore",
@@ -11,6 +14,13 @@ app = FastAPI(
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
+)
+
+
+app.mount(
+    "/static",
+    StaticFiles(directory=Path(__file__).parent / "static"),
+    name="static"
 )
 
 
