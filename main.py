@@ -18,6 +18,11 @@ app = FastAPI(
     openapi_url=None,
 )
 
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
 app.mount(
     "/static",
     StaticFiles(directory=Path(__file__).parent / "static"),
