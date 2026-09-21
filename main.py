@@ -1,3 +1,4 @@
+```python
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -26,7 +27,7 @@ def analyze_password(password: str) -> dict:
     if checks["lowercase"]:
         score += 15
 
-    checks["number"] = bool(re.search(r"\\d", password))
+    checks["number"] = bool(re.search(r"\d", password))
     if checks["number"]:
         score += 15
 
@@ -56,7 +57,6 @@ def analyze_password(password: str) -> dict:
     }
 
 
-
 app = FastAPI(
     title="MineCore",
     description="Mining Operations Management Platform",
@@ -66,10 +66,6 @@ app = FastAPI(
     openapi_url=None,
 )
 
-
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
 
 app.mount(
     "/static",
@@ -124,6 +120,7 @@ class PasswordRequest(BaseModel):
 @app.post("/api/security/password")
 def check_password_security(request: PasswordRequest):
     return analyze_password(request.password)
+
 
 mining_stages = [
     {
@@ -303,6 +300,20 @@ def find_stage(stage_id: int):
         (stage for stage in mining_stages if stage["id"] == stage_id),
         None
     )
+
+
+@app.get(
+    "/health",
+    response_model=HealthResponse,
+    include_in_schema=False
+)
+def health_check():
+    return {
+        "status": "healthy",
+        "service": "minecore",
+        "version": "2.0.0",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -1142,29 +1153,30 @@ footer {{
     box-shadow: 0 0 10px #4fd99b;
 }}
 
+/* Password Security Analyzer */
 
-.password-section {
+.password-section {{
     background: #08130e;
     border-top: 1px solid rgba(255,255,255,.05);
     border-bottom: 1px solid rgba(255,255,255,.05);
-}
+}}
 
-.password-panel {
+.password-panel {{
     max-width: 780px;
     margin: 0 auto;
     padding: 30px;
     border-radius: 20px;
     background: linear-gradient(145deg, #10201a, #0a1511);
     border: 1px solid rgba(255,255,255,.07);
-}
+}}
 
-.password-form {
+.password-form {{
     display: flex;
     gap: 10px;
     margin-top: 24px;
-}
+}}
 
-.password-input {
+.password-input {{
     flex: 1;
     min-width: 0;
     padding: 14px 16px;
@@ -1174,14 +1186,14 @@ footer {{
     color: white;
     outline: none;
     font-size: 14px;
-}
+}}
 
-.password-input:focus {
+.password-input:focus {{
     border-color: #4388ff;
     box-shadow: 0 0 0 3px rgba(67,136,255,.1);
-}
+}}
 
-.password-button {
+.password-button {{
     border: none;
     cursor: pointer;
     color: white;
@@ -1189,125 +1201,125 @@ footer {{
     padding: 0 22px;
     border-radius: 12px;
     font-weight: 700;
-}
+}}
 
-.password-button:hover {
+.password-button:hover {{
     background: #2872ff;
-}
+}}
 
-.password-result {
+.password-result {{
     display: none;
     margin-top: 22px;
-}
+}}
 
-.password-result.show {
+.password-result.show {{
     display: block;
-}
+}}
 
-.password-score-row {
+.password-score-row {{
     display: flex;
     justify-content: space-between;
     align-items: end;
     gap: 15px;
     margin-bottom: 12px;
-}
+}}
 
-.password-score {
+.password-score {{
     font-size: 38px;
     font-weight: 800;
     letter-spacing: -1.5px;
-}
+}}
 
-.password-strength {
+.password-strength {{
     font-size: 12px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1px;
-}
+}}
 
-.password-bar {
+.password-bar {{
     height: 7px;
     background: #1b2a24;
     border-radius: 20px;
     overflow: hidden;
-}
+}}
 
-.password-bar-fill {
+.password-bar-fill {{
     width: 0;
     height: 100%;
     border-radius: 20px;
     background: #4388ff;
     transition: width .3s ease;
-}
+}}
 
-.password-compliance {
+.password-compliance {{
     margin-top: 15px;
     padding: 12px 14px;
     border-radius: 10px;
     font-size: 12px;
-}
+}}
 
-.password-compliance.compliant {
+.password-compliance.compliant {{
     color: #4fdda0;
     background: rgba(79,223,160,.08);
-}
+}}
 
-.password-compliance.non-compliant {
+.password-compliance.non-compliant {{
     color: #ffbd59;
     background: rgba(255,189,89,.08);
-}
+}}
 
-.password-checks {
+.password-checks {{
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 9px;
     margin-top: 16px;
-}
+}}
 
-.password-check {
+.password-check {{
     padding: 11px 13px;
     border-radius: 10px;
     background: rgba(255,255,255,.025);
     color: #899b93;
     font-size: 11px;
-}
+}}
 
-.password-check.pass {
+.password-check.pass {{
     color: #4fdda0;
-}
+}}
 
-.password-check.fail {
+.password-check.fail {{
     color: #ff8e8e;
-}
+}}
 
-.password-error {
+.password-error {{
     display: none;
     margin-top: 15px;
     color: #ff8e8e;
     font-size: 12px;
-}
+}}
 
-.password-error.show {
+.password-error.show {{
     display: block;
-}
+}}
 
-@media (max-width: 650px) {
-    .password-form {
+@media (max-width: 650px) {{
+    .password-form {{
         flex-direction: column;
-    }
+    }}
 
-    .password-button {
+    .password-button {{
         min-height: 46px;
-    }
+    }}
 
-    .password-checks {
+    .password-checks {{
         grid-template-columns: 1fr;
-    }
+    }}
 
-    .password-panel {
+    .password-panel {{
         padding: 22px;
-    }
-}
+    }}
+}}
 
 @media (max-width: 900px) {{
     .nav-links {{
@@ -1416,7 +1428,8 @@ footer {{
     }}
 }}
 </style>
-   <link rel="stylesheet" href="/static/app.css">
+
+<link rel="stylesheet" href="/static/app.css">
 </head>
 
 <body>
@@ -1432,7 +1445,7 @@ footer {{
             <a href="#sites">Mining Sites</a>
             <a href="#operations">Operations</a>
             <a href="#equipment">Equipment</a>
-            <a href="#safety">Safety</a>
+            <a href="#security">Security</a>
         </div>
 
         <a class="nav-cta" href="#dashboard">
@@ -1585,7 +1598,6 @@ footer {{
     </div>
 </section>
 
-
 <section class="section password-section" id="security">
     <div class="section-header">
         <div>
@@ -1602,6 +1614,7 @@ footer {{
     <div class="password-panel">
         <div class="panel-heading">
             <h3>Analyze a Password</h3>
+
             <span style="color:#63756e;font-size:10px;">
                 Your password is sent only to this API endpoint for analysis.
             </span>
@@ -1616,6 +1629,7 @@ footer {{
                 autocomplete="off"
                 required
             >
+
             <button class="password-button" type="submit">
                 Analyze
             </button>
@@ -1624,9 +1638,11 @@ footer {{
         <div class="password-error" id="passwordError"></div>
 
         <div class="password-result" id="passwordResult">
+
             <div class="password-score-row">
                 <div>
                     <div class="muted">Security Score</div>
+
                     <div class="password-score">
                         <span id="passwordScore">0</span>/100
                     </div>
@@ -1653,6 +1669,7 @@ footer {{
             ></div>
 
             <div class="password-checks">
+
                 <div class="password-check" id="checkMinimum">
                     ○ Minimum 12 characters
                 </div>
@@ -1672,6 +1689,7 @@ footer {{
                 <div class="password-check" id="checkSpecial">
                     ○ Special character
                 </div>
+
             </div>
         </div>
     </div>
@@ -1756,8 +1774,8 @@ footer {{
 <script>
 const passwordForm = document.getElementById("passwordForm");
 
-if (passwordForm) {
-    passwordForm.addEventListener("submit", async function (event) {
+if (passwordForm) {{
+    passwordForm.addEventListener("submit", async function (event) {{
         event.preventDefault();
 
         const input = document.getElementById("passwordInput");
@@ -1768,32 +1786,33 @@ if (passwordForm) {
         error.classList.remove("show");
         result.classList.remove("show");
 
-        if (!password) {
+        if (!password) {{
             error.textContent = "Please enter a password.";
             error.classList.add("show");
             return;
-        }
+        }}
 
-        try {
-            const response = await fetch("/api/security/password", {
+        try {{
+            const response = await fetch("/api/security/password", {{
                 method: "POST",
-                headers: {
+                headers: {{
                     "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
+                }},
+                body: JSON.stringify({{
                     password: password
-                })
-            });
+                }})
+            }});
 
             const data = await response.json();
 
-            if (!response.ok) {
+            if (!response.ok) {{
                 throw new Error(
                     data.detail || "Password analysis failed."
                 );
-            }
+            }}
 
             document.getElementById("passwordScore").textContent = data.score;
+
             document.getElementById("passwordStrength").textContent =
                 data.strength;
 
@@ -1803,17 +1822,19 @@ if (passwordForm) {
             const compliance =
                 document.getElementById("passwordCompliance");
 
-            if (data.policy_compliant) {
+            if (data.policy_compliant) {{
                 compliance.textContent =
                     "✓ Password meets all required policy checks.";
+
                 compliance.className =
                     "password-compliance compliant";
-            } else {
+            }} else {{
                 compliance.textContent =
                     "⚠ Password does not meet all policy checks.";
+
                 compliance.className =
                     "password-compliance non-compliant";
-            }
+            }}
 
             const checks = [
                 ["minimum_length", "checkMinimum"],
@@ -1823,50 +1844,38 @@ if (passwordForm) {
                 ["special_character", "checkSpecial"]
             ];
 
-            checks.forEach(function (item) {
+            checks.forEach(function (item) {{
                 const passed = data.checks[item[0]];
                 const element = document.getElementById(item[1]);
 
                 element.classList.remove("pass", "fail");
 
-                if (passed) {
+                const label = element.textContent.substring(2);
+
+                if (passed) {{
                     element.classList.add("pass");
-                    element.textContent =
-                        "✓ " + element.textContent.substring(2);
-                } else {
+                    element.textContent = "✓ " + label;
+                }} else {{
                     element.classList.add("fail");
-                    element.textContent =
-                        "✗ " + element.textContent.substring(2);
-                }
-            });
+                    element.textContent = "✗ " + label;
+                }}
+            }});
 
             result.classList.add("show");
-        } catch (err) {
+
+        }} catch (err) {{
             error.textContent =
                 err.message || "Unable to analyze the password.";
+
             error.classList.add("show");
-        }
-    });
-}
+        }}
+    }});
+}}
 </script>
 
 </body>
 </html>
 """
-
-
-@app.get(
-    "/health",
-    response_model=HealthResponse,
-    include_in_schema=False
-)
-def health_check():
-    return {
-        "status": "healthy",
-        "service": "minecore",
-        "version": "2.0.0",
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
 
 
 @app.get(
@@ -2106,3 +2115,4 @@ def get_policy_context(stage_id: int):
         "safety_requirements": stage["safety_requirements"],
         "rag_ready": True
     }
+```
