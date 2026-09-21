@@ -418,9 +418,9 @@ def home_page():
 
             <a
                 class="site-link"
-                href="/api/dashboard/{site["id"]}"
+                href="/sites/{site["id"]}"
             >
-                View site data →
+                View site →
             </a>
         </article>
         """
@@ -1559,8 +1559,8 @@ footer {{
                 <div class="panel-heading">
                     <h3>Mining Lifecycle</h3>
 
-                    <a href="/api/mining/stages">
-                        View data →
+                    <a href="#operations">
+                        View operations →
                     </a>
                 </div>
 
@@ -1571,7 +1571,7 @@ footer {{
                 <div class="panel-heading">
                     <h3>Safety Alerts</h3>
 
-                    <a href="/api/sites/1/alerts">
+                    <a href="/sites/1#alerts">
                         View alerts →
                     </a>
                 </div>
@@ -1808,7 +1808,8 @@ if (passwordForm) {{
                 );
             }}
 
-            document.getElementById("passwordScore").textContent = data.score;
+            document.getElementById("passwordScore").textContent =
+                data.score;
 
             document.getElementById("passwordStrength").textContent =
                 data.strength;
@@ -1874,6 +1875,1047 @@ if (passwordForm) {{
 </html>
 """
 
+
+# ============================================================
+# INDIVIDUAL SITE DASHBOARD
+# ============================================================
+
+@app.get("/sites/{site_id}", response_class=HTMLResponse)
+def site_dashboard(site_id: int):
+    site = find_site(site_id)
+
+    if not site:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Mining site {site_id} not found"
+        )
+
+    return f"""
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{site["name"]} | MineCore</title>
+
+    <style>
+        * {{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }}
+
+        html {{
+            scroll-behavior: smooth;
+        }}
+
+        body {{
+            font-family:
+                Inter,
+                ui-sans-serif,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background: #06100c;
+            color: #ffffff;
+            min-height: 100vh;
+        }}
+
+        a {{
+            color: inherit;
+            text-decoration: none;
+        }}
+
+        .navbar {{
+            height: 76px;
+            padding: 0 6%;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            border-bottom: 1px solid rgba(255,255,255,.07);
+            background: rgba(5,15,11,.95);
+        }}
+
+        .logo {{
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            font-size: 18px;
+            font-weight: 800;
+        }}
+
+        .logo-mark {{
+            width: 38px;
+            height: 38px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 10px;
+            background: linear-gradient(
+                135deg,
+                #1766ff,
+                #0a4cd1
+            );
+        }}
+
+        .logo-name span {{
+            color: #6197ff;
+        }}
+
+        .back-link {{
+            color: #79a6ff;
+            font-size: 13px;
+            font-weight: 600;
+        }}
+
+        .page {{
+            max-width: 1200px;
+            margin: auto;
+            padding: 55px 6% 90px;
+        }}
+
+        .breadcrumb {{
+            color: #61736b;
+            font-size: 11px;
+            margin-bottom: 18px;
+        }}
+
+        .breadcrumb span {{
+            color: #79a6ff;
+        }}
+
+        .site-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 30px;
+
+            margin-bottom: 35px;
+        }}
+
+        .eyebrow {{
+            color: #5b96ff;
+            text-transform: uppercase;
+            letter-spacing: 1.8px;
+            font-size: 10px;
+            font-weight: 800;
+            margin-bottom: 9px;
+        }}
+
+        h1 {{
+            font-size: clamp(36px, 5vw, 58px);
+            letter-spacing: -2.5px;
+            line-height: 1;
+        }}
+
+        .location {{
+            color: #71837b;
+            margin-top: 10px;
+            font-size: 13px;
+        }}
+
+        .status {{
+            padding: 8px 14px;
+            border-radius: 20px;
+
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+        }}
+
+        .status.good {{
+            color: #4fdfa0;
+            background: rgba(79,223,160,.09);
+        }}
+
+        .status.warning {{
+            color: #ffbd59;
+            background: rgba(255,189,89,.09);
+        }}
+
+        .dashboard-grid {{
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }}
+
+        .metric {{
+            padding: 23px;
+            border-radius: 17px;
+
+            background: linear-gradient(
+                145deg,
+                #10201a,
+                #0a1511
+            );
+
+            border: 1px solid rgba(255,255,255,.07);
+        }}
+
+        .metric-label {{
+            color: #64766f;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 9px;
+            font-weight: 800;
+            margin-bottom: 9px;
+        }}
+
+        .metric-value {{
+            font-size: 27px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }}
+
+        .blue {{
+            color: #6098ff;
+        }}
+
+        .green {{
+            color: #4fdfa0;
+        }}
+
+        .orange {{
+            color: #ffbd59;
+        }}
+
+        .content-grid {{
+            display: grid;
+            grid-template-columns: 1.15fr .85fr;
+            gap: 18px;
+        }}
+
+        .panel {{
+            padding: 27px;
+            border-radius: 19px;
+
+            background: #0e1c16;
+            border: 1px solid rgba(255,255,255,.07);
+        }}
+
+        .panel + .panel {{
+            margin-top: 18px;
+        }}
+
+        .panel-title {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 22px;
+        }}
+
+        .panel-title h2 {{
+            font-size: 16px;
+        }}
+
+        .panel-title span {{
+            color: #60736b;
+            font-size: 10px;
+        }}
+
+        .stage-box {{
+            padding: 19px;
+            border-radius: 13px;
+            background: rgba(67,136,255,.055);
+            border: 1px solid rgba(67,136,255,.12);
+        }}
+
+        .stage-label {{
+            color: #638fdc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 9px;
+            font-weight: 800;
+            margin-bottom: 7px;
+        }}
+
+        .stage-name {{
+            font-size: 21px;
+            font-weight: 750;
+        }}
+
+        .stage-status {{
+            display: inline-block;
+            margin-top: 8px;
+
+            color: #4fdfa0;
+            font-size: 10px;
+            font-weight: 700;
+        }}
+
+        .progress-heading {{
+            display: flex;
+            justify-content: space-between;
+
+            margin-top: 25px;
+            margin-bottom: 8px;
+
+            color: #788a83;
+            font-size: 11px;
+        }}
+
+        .progress-track {{
+            height: 7px;
+            overflow: hidden;
+
+            border-radius: 20px;
+            background: #1a2922;
+        }}
+
+        .progress-fill {{
+            height: 100%;
+            width: 0;
+
+            border-radius: 20px;
+
+            background: linear-gradient(
+                90deg,
+                #145cff,
+                #66a1ff
+            );
+
+            transition: width .5s ease;
+        }}
+
+        .alert {{
+            display: flex;
+            gap: 12px;
+
+            padding: 14px;
+            margin-bottom: 9px;
+
+            border-radius: 12px;
+            background: rgba(255,255,255,.025);
+        }}
+
+        .alert-icon {{
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            font-weight: 800;
+        }}
+
+        .alert-icon.medium {{
+            color: #ffbd59;
+            background: rgba(255,189,89,.1);
+        }}
+
+        .alert-icon.low {{
+            color: #61a0ff;
+            background: rgba(97,160,255,.1);
+        }}
+
+        .alert-message {{
+            color: #dbe5e0;
+            font-size: 12px;
+        }}
+
+        .alert-meta {{
+            color: #60736b;
+            font-size: 9px;
+            margin-top: 5px;
+        }}
+
+        .empty {{
+            padding: 25px;
+            text-align: center;
+
+            color: #4fdfa0;
+            font-size: 12px;
+
+            border-radius: 12px;
+            background: rgba(79,223,160,.05);
+        }}
+
+        .equipment {{
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }}
+
+        .equipment-card {{
+            padding: 17px;
+            border-radius: 13px;
+
+            background: rgba(255,255,255,.025);
+            border: 1px solid rgba(255,255,255,.05);
+        }}
+
+        .equipment-icon {{
+            font-size: 20px;
+            margin-bottom: 10px;
+        }}
+
+        .equipment-name {{
+            font-size: 13px;
+            font-weight: 700;
+        }}
+
+        .equipment-status {{
+            color: #4fdfa0;
+            font-size: 9px;
+            margin-top: 5px;
+        }}
+
+        .requirements {{
+            list-style: none;
+        }}
+
+        .requirements li {{
+            padding: 10px 0;
+
+            border-bottom: 1px solid
+                rgba(255,255,255,.045);
+
+            color: #83948d;
+            font-size: 11px;
+        }}
+
+        .requirements li:last-child {{
+            border-bottom: none;
+        }}
+
+        .requirements li::before {{
+            content: "✓";
+            color: #4fdfa0;
+            font-weight: 800;
+            margin-right: 9px;
+        }}
+
+        .loading {{
+            padding: 50px;
+            text-align: center;
+            color: #63756e;
+        }}
+
+        .error {{
+            padding: 30px;
+            border-radius: 15px;
+
+            color: #ff8e8e;
+            background: rgba(255,80,80,.06);
+            border: 1px solid rgba(255,80,80,.12);
+        }}
+
+        @media (max-width: 900px) {{
+            .dashboard-grid {{
+                grid-template-columns: repeat(2, 1fr);
+            }}
+
+            .content-grid {{
+                grid-template-columns: 1fr;
+            }}
+        }}
+
+        @media (max-width: 600px) {{
+            .site-header {{
+                flex-direction: column;
+            }}
+
+            .dashboard-grid {{
+                grid-template-columns: 1fr;
+            }}
+
+            .equipment {{
+                grid-template-columns: 1fr;
+            }}
+
+            .page {{
+                padding: 40px 5% 70px;
+            }}
+        }}
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <a href="/" class="logo">
+        <div class="logo-mark">⛏</div>
+        <div class="logo-name">
+            MINE<span>CORE</span>
+        </div>
+    </a>
+
+    <a href="/" class="back-link">
+        ← Back to Mining Sites
+    </a>
+
+</nav>
+
+<main class="page">
+
+    <div class="breadcrumb">
+        MineCore / Mining Sites /
+        <span>{site["name"]}</span>
+    </div>
+
+    <header class="site-header">
+
+        <div>
+            <div class="eyebrow">
+                Site Operations Dashboard
+            </div>
+
+            <h1 id="siteName">
+                {site["name"]}
+            </h1>
+
+            <div class="location">
+                📍 {site["location"]}
+            </div>
+        </div>
+
+        <div
+            id="safetyStatus"
+            class="status good"
+        >
+            Loading...
+        </div>
+
+    </header>
+
+    <div id="dashboardContent">
+
+        <div class="loading">
+            Loading site operations...
+        </div>
+
+    </div>
+
+</main>
+
+
+<script>
+
+const siteId = {site_id};
+
+
+function escapeHtml(value) {{
+    if (value === null || value === undefined) {{
+        return "";
+    }}
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}}
+
+
+function getProgress(status) {{
+
+    const values = {{
+        "Active": 82,
+        "Processing": 58,
+        "Transportation": 72
+    }};
+
+    return values[status] || 50;
+}}
+
+
+function renderDashboard(data) {{
+
+    const site = data.site;
+    const operation = data.operation;
+    const production = data.production;
+    const safety = data.safety;
+    const equipment = data.equipment;
+    const alerts = data.alerts || [];
+
+    document.getElementById("siteName").textContent =
+        site.name;
+
+    const safetyStatus =
+        document.getElementById("safetyStatus");
+
+    safetyStatus.textContent =
+        safety.status;
+
+    safetyStatus.className =
+        "status " +
+        (
+            safety.status.toLowerCase() === "good"
+                ? "good"
+                : "warning"
+        );
+
+
+    const progress =
+        getProgress(production.status);
+
+
+    let alertsHtml = "";
+
+    if (alerts.length === 0) {{
+
+        alertsHtml = `
+            <div class="empty">
+                ✓ No open safety alerts
+            </div>
+        `;
+
+    }} else {{
+
+        alertsHtml = alerts.map(function(alert) {{
+
+            const severity =
+                alert.severity.toLowerCase();
+
+            return `
+                <div class="alert">
+
+                    <div class="alert-icon ${{severity}}">
+                        !
+                    </div>
+
+                    <div>
+
+                        <div class="alert-message">
+                            ${{escapeHtml(alert.message)}}
+                        </div>
+
+                        <div class="alert-meta">
+                            ${{escapeHtml(alert.severity)}}
+                            ·
+                            ${{escapeHtml(alert.status)}}
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+
+        }}).join("");
+
+    }}
+
+
+    let equipmentHtml = "";
+
+    if (!equipment.items || equipment.items.length === 0) {{
+
+        equipmentHtml = `
+            <div class="empty">
+                No equipment currently assigned
+            </div>
+        `;
+
+    }} else {{
+
+        equipmentHtml = equipment.items.map(function(item) {{
+
+            return `
+                <div class="equipment-card">
+
+                    <div class="equipment-icon">
+                        ⛏
+                    </div>
+
+                    <div class="equipment-name">
+                        ${{escapeHtml(item.name)}}
+                    </div>
+
+                    <div class="equipment-status">
+                        ● ${{escapeHtml(item.status)}}
+                    </div>
+
+                </div>
+            `;
+
+        }}).join("");
+
+    }}
+
+
+    const currentStage =
+        data.operation.stage_id;
+
+
+    document.getElementById("dashboardContent").innerHTML = `
+
+        <div class="dashboard-grid">
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    Production Today
+                </div>
+
+                <div class="metric-value blue">
+                    ${{Number(
+                        production.production_today
+                    ).toLocaleString()}}
+
+                    <span style="
+                        font-size:10px;
+                        color:#60736b;
+                    ">
+                        TONS
+                    </span>
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    Production Status
+                </div>
+
+                <div class="metric-value green">
+                    ${{escapeHtml(production.status)}}
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    Open Safety Alerts
+                </div>
+
+                <div class="metric-value orange">
+                    ${{safety.open_alerts}}
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    Equipment
+                </div>
+
+                <div class="metric-value blue">
+                    ${{equipment.operational}}/${{
+                        equipment.total
+                    }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="content-grid">
+
+            <div>
+
+                <div class="panel">
+
+                    <div class="panel-title">
+                        <h2>Current Operation</h2>
+
+                        <span>
+                            Stage ${{operation.stage_id}}
+                        </span>
+                    </div>
+
+                    <div class="stage-box">
+
+                        <div class="stage-label">
+                            Current Mining Stage
+                        </div>
+
+                        <div class="stage-name">
+                            ${{escapeHtml(
+                                operation.current_stage
+                            )}}
+                        </div>
+
+                        <div class="stage-status">
+                            ● ${{escapeHtml(
+                                operation.stage_status
+                            )}}
+                        </div>
+
+                    </div>
+
+                    <div class="progress-heading">
+
+                        <span>
+                            Operational progress
+                        </span>
+
+                        <span>
+                            ${{progress}}%
+                        </span>
+
+                    </div>
+
+                    <div class="progress-track">
+
+                        <div
+                            class="progress-fill"
+                            style="width:${{progress}}%"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="panel-title">
+
+                        <h2>Equipment</h2>
+
+                        <span>
+                            ${{equipment.operational}} /
+                            ${{equipment.total}}
+                            operational
+                        </span>
+
+                    </div>
+
+                    <div class="equipment">
+                        ${{equipmentHtml}}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div>
+
+                <div class="panel" id="alerts">
+
+                    <div class="panel-title">
+
+                        <h2>Safety Alerts</h2>
+
+                        <span>
+                            ${{safety.open_alerts}} open
+                        </span>
+
+                    </div>
+
+                    ${{alertsHtml}}
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="panel-title">
+                        <h2>Site Information</h2>
+                    </div>
+
+                    <div style="
+                        color:#758780;
+                        font-size:11px;
+                        line-height:1.8;
+                    ">
+
+                        <div>
+                            <strong style="color:#dbe5e0;">
+                                Site:
+                            </strong>
+
+                            ${{escapeHtml(site.name)}}
+                        </div>
+
+                        <div>
+                            <strong style="color:#dbe5e0;">
+                                Location:
+                            </strong>
+
+                            ${{escapeHtml(site.location)}}
+                        </div>
+
+                        <div>
+                            <strong style="color:#dbe5e0;">
+                                Stage:
+                            </strong>
+
+                            ${{escapeHtml(
+                                operation.current_stage
+                            )}}
+                        </div>
+
+                        <div>
+                            <strong style="color:#dbe5e0;">
+                                Production:
+                            </strong>
+
+                            ${{escapeHtml(
+                                production.status
+                            )}}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    loadRequirements(currentStage);
+}}
+
+
+async function loadRequirements(stageId) {{
+
+    try {{
+
+        const response =
+            await fetch(
+                `/api/mining/stages/${{stageId}}/safety`
+            );
+
+        if (!response.ok) {{
+            return;
+        }}
+
+        const data =
+            await response.json();
+
+        const panel =
+            document.querySelector(
+                ".content-grid > div:first-child"
+            );
+
+        if (!panel) {{
+            return;
+        }}
+
+        const requirementsHtml =
+            data.safety_requirements
+                .map(function(requirement) {{
+
+                    return `
+                        <li>
+                            ${{escapeHtml(requirement)}}
+                        </li>
+                    `;
+
+                })
+                .join("");
+
+        panel.insertAdjacentHTML(
+            "beforeend",
+            `
+                <div class="panel">
+
+                    <div class="panel-title">
+
+                        <h2>
+                            Safety Requirements
+                        </h2>
+
+                        <span>
+                            ${{data.requirement_count}}
+                            requirements
+                        </span>
+
+                    </div>
+
+                    <ul class="requirements">
+                        ${{requirementsHtml}}
+                    </ul>
+
+                </div>
+            `
+        );
+
+    }} catch (error) {{
+
+        console.error(
+            "Unable to load safety requirements:",
+            error
+        );
+
+    }}
+}}
+
+
+async function loadDashboard() {{
+
+    try {{
+
+        const response =
+            await fetch(
+                `/api/dashboard/${{siteId}}`
+            );
+
+        if (!response.ok) {{
+
+            throw new Error(
+                "Unable to load site dashboard."
+            );
+
+        }}
+
+        const data =
+            await response.json();
+
+        renderDashboard(data);
+
+    }} catch (error) {{
+
+        document.getElementById(
+            "dashboardContent"
+        ).innerHTML = `
+
+            <div class="error">
+                Unable to load site information.
+                Please try again.
+            </div>
+
+        `;
+
+        console.error(error);
+    }}
+}}
+
+
+loadDashboard();
+
+</script>
+
+</body>
+</html>
+"""
+
+
+# ============================================================
+# API ROUTES
+# ============================================================
 
 @app.get(
     "/api/mining/stages",
@@ -1970,6 +3012,12 @@ def get_dashboard(site_id: int):
 
     current_stage = find_stage(site["current_stage_id"])
 
+    if not current_stage:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Mining stage {site['current_stage_id']} not found"
+        )
+
     site_alerts = [
         alert
         for alert in alerts
@@ -1977,11 +3025,7 @@ def get_dashboard(site_id: int):
         and alert["status"] == "Open"
     ]
 
-    equipment = (
-        current_stage.get("equipment", [])
-        if current_stage
-        else []
-    )
+    equipment = current_stage.get("equipment", [])
 
     operational_equipment = sum(
         1
