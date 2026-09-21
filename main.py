@@ -5,8 +5,8 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime, timezone
-from fastapi.staticfiles import StaticFiles
-from pathlib import Path
+
+from password_security import analyze_password
 
 
 app = FastAPI(
@@ -17,9 +17,6 @@ app = FastAPI(
     redoc_url=None,
     openapi_url=None,
 )
-
-app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
-
 
 app.mount(
     "/static",
@@ -66,6 +63,14 @@ class HealthResponse(BaseModel):
     version: str
     timestamp: str
 
+
+class PasswordRequest(BaseModel):
+    password: str = Field(..., min_length=1)
+
+
+@app.post("/api/security/password")
+def check_password_security(request: PasswordRequest):
+    return analyze_password(request.password)
 
 mining_stages = [
     {
