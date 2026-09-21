@@ -1,4 +1,3 @@
-```python
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -1153,8 +1152,6 @@ footer {{
     box-shadow: 0 0 10px #4fd99b;
 }}
 
-/* Password Security Analyzer */
-
 .password-section {{
     background: #08130e;
     border-top: 1px solid rgba(255,255,255,.05);
@@ -2115,4 +2112,3 @@ def get_policy_context(stage_id: int):
         "safety_requirements": stage["safety_requirements"],
         "rag_ready": True
     }
-```
