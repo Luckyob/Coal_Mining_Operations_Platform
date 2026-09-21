@@ -6,7 +6,55 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime, timezone
 
-from password_security import analyze_password
+import re
+
+
+def analyze_password(password: str) -> dict:
+    """Analyze password strength and return security requirements."""
+    score = 0
+    checks = {}
+
+    checks["minimum_length"] = len(password) >= 12
+    if checks["minimum_length"]:
+        score += 25
+
+    checks["uppercase"] = bool(re.search(r"[A-Z]", password))
+    if checks["uppercase"]:
+        score += 15
+
+    checks["lowercase"] = bool(re.search(r"[a-z]", password))
+    if checks["lowercase"]:
+        score += 15
+
+    checks["number"] = bool(re.search(r"\\d", password))
+    if checks["number"]:
+        score += 15
+
+    checks["special_character"] = bool(
+        re.search(r"[^A-Za-z0-9]", password)
+    )
+    if checks["special_character"]:
+        score += 15
+
+    if len(password) >= 16:
+        score += 15
+
+    if score >= 85:
+        strength = "Very Strong"
+    elif score >= 70:
+        strength = "Strong"
+    elif score >= 50:
+        strength = "Moderate"
+    else:
+        strength = "Weak"
+
+    return {
+        "score": min(score, 100),
+        "strength": strength,
+        "policy_compliant": all(checks.values()),
+        "checks": checks,
+    }
+
 
 
 app = FastAPI(
@@ -1094,6 +1142,173 @@ footer {{
     box-shadow: 0 0 10px #4fd99b;
 }}
 
+
+.password-section {
+    background: #08130e;
+    border-top: 1px solid rgba(255,255,255,.05);
+    border-bottom: 1px solid rgba(255,255,255,.05);
+}
+
+.password-panel {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 20px;
+    background: linear-gradient(145deg, #10201a, #0a1511);
+    border: 1px solid rgba(255,255,255,.07);
+}
+
+.password-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.password-input {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: #07110d;
+    color: white;
+    outline: none;
+    font-size: 14px;
+}
+
+.password-input:focus {
+    border-color: #4388ff;
+    box-shadow: 0 0 0 3px rgba(67,136,255,.1);
+}
+
+.password-button {
+    border: none;
+    cursor: pointer;
+    color: white;
+    background: #0c5cff;
+    padding: 0 22px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.password-button:hover {
+    background: #2872ff;
+}
+
+.password-result {
+    display: none;
+    margin-top: 22px;
+}
+
+.password-result.show {
+    display: block;
+}
+
+.password-score-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 15px;
+    margin-bottom: 12px;
+}
+
+.password-score {
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+}
+
+.password-strength {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.password-bar {
+    height: 7px;
+    background: #1b2a24;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.password-bar-fill {
+    width: 0;
+    height: 100%;
+    border-radius: 20px;
+    background: #4388ff;
+    transition: width .3s ease;
+}
+
+.password-compliance {
+    margin-top: 15px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.password-compliance.compliant {
+    color: #4fdda0;
+    background: rgba(79,223,160,.08);
+}
+
+.password-compliance.non-compliant {
+    color: #ffbd59;
+    background: rgba(255,189,89,.08);
+}
+
+.password-checks {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+    margin-top: 16px;
+}
+
+.password-check {
+    padding: 11px 13px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.025);
+    color: #899b93;
+    font-size: 11px;
+}
+
+.password-check.pass {
+    color: #4fdda0;
+}
+
+.password-check.fail {
+    color: #ff8e8e;
+}
+
+.password-error {
+    display: none;
+    margin-top: 15px;
+    color: #ff8e8e;
+    font-size: 12px;
+}
+
+.password-error.show {
+    display: block;
+}
+
+@media (max-width: 650px) {
+    .password-form {
+        flex-direction: column;
+    }
+
+    .password-button {
+        min-height: 46px;
+    }
+
+    .password-checks {
+        grid-template-columns: 1fr;
+    }
+
+    .password-panel {
+        padding: 22px;
+    }
+}
+
 @media (max-width: 900px) {{
     .nav-links {{
         display: none;
@@ -1370,6 +1585,98 @@ footer {{
     </div>
 </section>
 
+
+<section class="section password-section" id="security">
+    <div class="section-header">
+        <div>
+            <div class="section-label">Security Module</div>
+            <h2 class="section-title">Password Security Analyzer</h2>
+        </div>
+
+        <p class="section-description">
+            Check password strength against MineCore's
+            basic security requirements.
+        </p>
+    </div>
+
+    <div class="password-panel">
+        <div class="panel-heading">
+            <h3>Analyze a Password</h3>
+            <span style="color:#63756e;font-size:10px;">
+                Your password is sent only to this API endpoint for analysis.
+            </span>
+        </div>
+
+        <form class="password-form" id="passwordForm">
+            <input
+                class="password-input"
+                id="passwordInput"
+                type="password"
+                placeholder="Enter a password to analyze"
+                autocomplete="off"
+                required
+            >
+            <button class="password-button" type="submit">
+                Analyze
+            </button>
+        </form>
+
+        <div class="password-error" id="passwordError"></div>
+
+        <div class="password-result" id="passwordResult">
+            <div class="password-score-row">
+                <div>
+                    <div class="muted">Security Score</div>
+                    <div class="password-score">
+                        <span id="passwordScore">0</span>/100
+                    </div>
+                </div>
+
+                <div
+                    class="password-strength"
+                    id="passwordStrength"
+                >
+                    -
+                </div>
+            </div>
+
+            <div class="password-bar">
+                <div
+                    class="password-bar-fill"
+                    id="passwordBarFill"
+                ></div>
+            </div>
+
+            <div
+                class="password-compliance"
+                id="passwordCompliance"
+            ></div>
+
+            <div class="password-checks">
+                <div class="password-check" id="checkMinimum">
+                    ○ Minimum 12 characters
+                </div>
+
+                <div class="password-check" id="checkUppercase">
+                    ○ Uppercase letter
+                </div>
+
+                <div class="password-check" id="checkLowercase">
+                    ○ Lowercase letter
+                </div>
+
+                <div class="password-check" id="checkNumber">
+                    ○ Number
+                </div>
+
+                <div class="password-check" id="checkSpecial">
+                    ○ Special character
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="section equipment-section" id="equipment">
 
     <div class="section-header">
@@ -1445,7 +1752,104 @@ footer {{
 
     </div>
 </footer>
-   <script src="/static/app.js"></script>
+
+<script>
+const passwordForm = document.getElementById("passwordForm");
+
+if (passwordForm) {
+    passwordForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const input = document.getElementById("passwordInput");
+        const result = document.getElementById("passwordResult");
+        const error = document.getElementById("passwordError");
+        const password = input.value;
+
+        error.classList.remove("show");
+        result.classList.remove("show");
+
+        if (!password) {
+            error.textContent = "Please enter a password.";
+            error.classList.add("show");
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/security/password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.detail || "Password analysis failed."
+                );
+            }
+
+            document.getElementById("passwordScore").textContent = data.score;
+            document.getElementById("passwordStrength").textContent =
+                data.strength;
+
+            const bar = document.getElementById("passwordBarFill");
+            bar.style.width = data.score + "%";
+
+            const compliance =
+                document.getElementById("passwordCompliance");
+
+            if (data.policy_compliant) {
+                compliance.textContent =
+                    "✓ Password meets all required policy checks.";
+                compliance.className =
+                    "password-compliance compliant";
+            } else {
+                compliance.textContent =
+                    "⚠ Password does not meet all policy checks.";
+                compliance.className =
+                    "password-compliance non-compliant";
+            }
+
+            const checks = [
+                ["minimum_length", "checkMinimum"],
+                ["uppercase", "checkUppercase"],
+                ["lowercase", "checkLowercase"],
+                ["number", "checkNumber"],
+                ["special_character", "checkSpecial"]
+            ];
+
+            checks.forEach(function (item) {
+                const passed = data.checks[item[0]];
+                const element = document.getElementById(item[1]);
+
+                element.classList.remove("pass", "fail");
+
+                if (passed) {
+                    element.classList.add("pass");
+                    element.textContent =
+                        "✓ " + element.textContent.substring(2);
+                } else {
+                    element.classList.add("fail");
+                    element.textContent =
+                        "✗ " + element.textContent.substring(2);
+                }
+            });
+
+            result.classList.add("show");
+        } catch (err) {
+            error.textContent =
+                err.message || "Unable to analyze the password.";
+            error.classList.add("show");
+        }
+    });
+}
+</script>
+
 </body>
 </html>
 """
