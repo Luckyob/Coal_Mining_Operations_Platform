@@ -8,13 +8,9 @@ from datetime import datetime, timezone
 import re
 
 
-# ============================================================
-# PASSWORD SECURITY ANALYZER
-# ============================================================
+# Password Security Analyzer
 
 def analyze_password(password: str) -> dict:
-    """Analyze password strength and return security requirements."""
-
     score = 0
 
     checks = {
@@ -70,7 +66,9 @@ def analyze_password(password: str) -> dict:
         recommendations.append("Add at least one special character.")
 
     if len(password) < 16:
-        recommendations.append("Consider using 16 or more characters for stronger security.")
+        recommendations.append(
+            "Consider using 16 or more characters for stronger security."
+        )
 
     return {
         "score": score,
@@ -81,9 +79,7 @@ def analyze_password(password: str) -> dict:
     }
 
 
-# ============================================================
-# FASTAPI APPLICATION
-# ============================================================
+# FastAPI Application
 
 app = FastAPI(
     title="MineCore",
@@ -95,9 +91,7 @@ app = FastAPI(
 )
 
 
-# ============================================================
-# STATIC FILES
-# ============================================================
+# Static Files
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -110,9 +104,7 @@ if STATIC_DIR.exists():
     )
 
 
-# ============================================================
-# DATA MODELS
-# ============================================================
+# Data Models
 
 class Equipment(BaseModel):
     name: str
@@ -158,9 +150,7 @@ class PasswordRequest(BaseModel):
     password: str
 
 
-# ============================================================
-# MINING DATA
-# ============================================================
+# Mining Stages
 
 mining_stages = [
     MiningStage(
@@ -222,6 +212,8 @@ mining_stages = [
 ]
 
 
+# Mining Sites
+
 mining_sites = [
     MiningSite(
         id=1,
@@ -262,6 +254,8 @@ mining_sites = [
 ]
 
 
+# Safety Alerts
+
 alerts = [
     Alert(
         id=1,
@@ -280,9 +274,7 @@ alerts = [
 ]
 
 
-# ============================================================
-# HELPER FUNCTIONS
-# ============================================================
+# Helper Functions
 
 def find_site(site_id: int) -> MiningSite:
     for site in mining_sites:
@@ -307,8 +299,6 @@ def find_stage(stage_id: int) -> MiningStage:
 
 
 def escape_html(value) -> str:
-    """Basic HTML escaping for generated page content."""
-
     if value is None:
         return ""
 
@@ -322,9 +312,7 @@ def escape_html(value) -> str:
     )
 
 
-# ============================================================
-# HEALTH CHECK
-# ============================================================
+# Health Check
 
 @app.get("/health", response_model=HealthResponse)
 def health_check():
@@ -336,22 +324,18 @@ def health_check():
     )
 
 
-# ============================================================
-# PASSWORD SECURITY API
-# ============================================================
+# Password Security API
 
 @app.post("/api/security/password")
 def password_security(request: PasswordRequest):
     return analyze_password(request.password)
 
 
-# ============================================================
-# MINING STAGES API
-# ============================================================
+# Mining Stage API
 
 @app.get("/api/mining/stages")
 def get_mining_stages(
-    status: Optional[str] = Query(default=None)
+    status: Optional[str] = Query(default=None),
 ):
     if status:
         return [
@@ -423,9 +407,7 @@ def get_policy_context(stage_id: int):
     }
 
 
-# ============================================================
-# SITES API
-# ============================================================
+# Sites API
 
 @app.get("/api/sites")
 def get_sites():
@@ -508,11 +490,12 @@ def get_site_alerts(
     return results
 
 
-# ============================================================
-# HOMEPAGE DATA
-# ============================================================
+# Homepage Calculations
 
-total_production = sum(site.production for site in mining_sites)
+total_production = sum(
+    site.production
+    for site in mining_sites
+)
 
 active_sites = sum(
     1
@@ -542,9 +525,7 @@ equipment_percentage = (
 )
 
 
-# ============================================================
-# HOMEPAGE
-# ============================================================
+# Homepage
 
 @app.get("/", response_class=HTMLResponse)
 def homepage():
@@ -559,16 +540,22 @@ def homepage():
                     <span class="site-label">MINING SITE</span>
                     <h3>{escape_html(site.name)}</h3>
                 </div>
-                <span class="status-badge">{escape_html(site.status)}</span>
+
+                <span class="status-badge">
+                    {escape_html(site.status)}
+                </span>
             </div>
 
-            <p class="location">{escape_html(site.location)}</p>
+            <p class="location">
+                {escape_html(site.location)}
+            </p>
 
             <div class="site-card-bottom">
                 <span>
                     Safety:
                     <strong>{escape_html(site.safety_status)}</strong>
                 </span>
+
                 <span>
                     {site.production:,} tons
                 </span>
@@ -579,16 +566,23 @@ def homepage():
     stage_rows = ""
 
     for stage in mining_stages:
+        status_class = stage.status.lower().replace(" ", "-")
+
         stage_rows += f"""
         <div class="stage-row">
-            <div class="stage-number">{stage.id}</div>
+            <div class="stage-number">
+                {stage.id}
+            </div>
 
             <div class="stage-info">
                 <strong>{escape_html(stage.name)}</strong>
-                <span>{escape_html(stage.description)}</span>
+
+                <span>
+                    {escape_html(stage.description)}
+                </span>
             </div>
 
-            <span class="stage-status {stage.status.lower().replace(" ", "-")}">
+            <span class="stage-status {status_class}">
                 {escape_html(stage.status)}
             </span>
         </div>
@@ -617,24 +611,35 @@ def homepage():
     html = """
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>MineCore | Coal Mining Operations Platform</title>
 
     <style>
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: Arial, Helvetica, sans-serif;
-            background: #f4f7f5;
-            color: #17231b;
-            line-height: 1.6;
+            background: #020b07;
+            color: #f5f7f6;
+            line-height: 1.5;
         }
 
         a {
@@ -643,216 +648,270 @@ def homepage():
         }
 
         nav {
-            background: #102218;
-            color: white;
-            padding: 18px 6%;
+            background: #030b08;
+            border-bottom: 1px solid rgba(255,255,255,.05);
+            padding: 22px max(6%, calc((100vw - 1080px) / 2));
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
 
         .logo {
-            font-size: 24px;
+            font-size: 19px;
             font-weight: 800;
+            color: #fff;
         }
 
         .logo span {
-            color: #78c091;
+            color: #4f8cff;
         }
 
         .nav-links {
             display: flex;
-            gap: 24px;
+            gap: 26px;
             list-style: none;
         }
 
         .nav-links a {
-            color: #dce8df;
-            font-size: 14px;
+            color: #aeb9b4;
+            font-size: 12px;
         }
 
         .nav-links a:hover {
-            color: white;
+            color: #fff;
         }
 
         .hero {
-            background: #183524;
+            background:
+                radial-gradient(
+                    circle at 75% 35%,
+                    rgba(24, 80, 55, .12),
+                    transparent 35%
+                ),
+                #020b07;
+
             color: white;
-            padding: 75px 6%;
+
+            padding:
+                70px
+                max(6%, calc((100vw - 1080px) / 2))
+                105px;
         }
 
         .hero-content {
-            max-width: 900px;
+            max-width: 850px;
         }
 
         .eyebrow {
-            color: #8bd19f;
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            margin-bottom: 12px;
+            color: #4f8cff;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+            margin-bottom: 18px;
         }
 
         .hero h1 {
-            font-size: clamp(38px, 6vw, 68px);
-            line-height: 1.05;
-            margin-bottom: 20px;
+            font-size: clamp(48px, 7vw, 76px);
+            line-height: .98;
+            letter-spacing: -3px;
+            margin-bottom: 25px;
+        }
+
+        .hero h1 .blue {
+            color: #4f8cff;
         }
 
         .hero p {
-            max-width: 720px;
-            color: #d8e6dc;
-            font-size: 18px;
+            max-width: 700px;
+            color: #a8b5ae;
+            font-size: 15px;
+            line-height: 1.7;
         }
 
         .hero-buttons {
             margin-top: 30px;
             display: flex;
             gap: 12px;
-            flex-wrap: wrap;
         }
 
         .button {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
             padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: 700;
-            border: 1px solid transparent;
+            border-radius: 24px;
+            font-size: 12px;
+            font-weight: 800;
         }
 
         .button-primary {
-            background: #78c091;
-            color: #102218;
+            background: #1769ff;
+            color: white;
+            box-shadow: 0 8px 25px rgba(23,105,255,.25);
         }
 
         .button-secondary {
-            border-color: #9eb9a5;
-            color: white;
+            border: 1px solid #3d4944;
+            color: #d8dfdb;
+        }
+
+        main {
+            background: #020b07;
         }
 
         .container {
-            width: min(1180px, 88%);
+            width: min(1080px, 88%);
             margin: 0 auto;
         }
 
         .stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-top: -35px;
+            background: #061812;
+            border: 1px solid #17352a;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: -48px;
             position: relative;
+            z-index: 2;
         }
 
         .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            background: transparent;
+            padding: 25px 20px;
+            border-right: 1px solid #17352a;
+            box-shadow: none;
+        }
+
+        .stat-card:last-child {
+            border-right: 0;
         }
 
         .stat-label {
-            color: #68766d;
-            font-size: 13px;
+            color: #65766e;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .5px;
         }
 
         .stat-value {
-            font-size: 30px;
+            color: #fff;
+            font-size: 23px;
             font-weight: 800;
-            margin-top: 6px;
+            margin-top: 7px;
+        }
+
+        .stat-card:nth-child(1) .stat-value,
+        .stat-card:nth-child(4) .stat-value {
+            color: #4f8cff;
+        }
+
+        .stat-card:nth-child(2) .stat-value {
+            color: #45d48a;
+        }
+
+        .stat-card:nth-child(3) .stat-value {
+            color: #ffb340;
         }
 
         section {
-            padding: 70px 0;
+            padding: 75px 0;
         }
 
         .section-heading {
-            margin-bottom: 28px;
+            margin-bottom: 30px;
         }
 
         .section-heading h2 {
-            font-size: 32px;
-            margin-bottom: 8px;
+            color: #fff;
+            font-size: 30px;
+            letter-spacing: -1px;
         }
 
         .section-heading p {
-            color: #657269;
+            color: #687870;
+            font-size: 12px;
         }
 
         .sites-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
         }
 
         .site-card {
-            background: white;
-            padding: 22px;
-            border-radius: 12px;
-            border: 1px solid #dfe7e1;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background: #061812;
+            border: 1px solid #17352a;
+            padding: 24px;
+            border-radius: 14px;
+            transition: .2s ease;
         }
 
         .site-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            border-color: #275440;
+            transform: translateY(-2px);
         }
 
         .site-card-top {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
         }
 
         .site-label {
-            font-size: 10px;
-            color: #75827a;
+            color: #527065;
+            font-size: 9px;
+            font-weight: 700;
             letter-spacing: 1px;
         }
 
         .site-card h3 {
-            margin-top: 3px;
+            color: #fff;
+            font-size: 20px;
+            margin-top: 4px;
         }
 
         .status-badge {
-            background: #e5f4e9;
-            color: #22613a;
-            padding: 4px 8px;
+            background: rgba(69,212,138,.1);
+            color: #45d48a;
+            border: 1px solid rgba(69,212,138,.15);
+            padding: 4px 9px;
             border-radius: 20px;
-            font-size: 11px;
-            height: fit-content;
+            font-size: 9px;
         }
 
         .location {
-            color: #68766d;
-            margin: 14px 0;
+            color: #718078;
+            font-size: 12px;
+            margin: 15px 0;
         }
 
         .site-card-bottom {
-            border-top: 1px solid #e5ebe6;
+            border-top: 1px solid #17352a;
             padding-top: 14px;
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
-            color: #68766d;
+            color: #718078;
+            font-size: 11px;
+        }
+
+        .site-card-bottom strong {
+            color: #45d48a;
         }
 
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1.3fr 1fr;
-            gap: 22px;
+            gap: 15px;
         }
 
         .panel {
-            background: white;
-            border-radius: 12px;
+            background: #061812;
+            border: 1px solid #17352a;
+            border-radius: 14px;
             padding: 24px;
-            border: 1px solid #dfe7e1;
         }
 
         .panel h3 {
+            color: #fff;
             margin-bottom: 18px;
         }
 
@@ -861,7 +920,7 @@ def homepage():
             align-items: center;
             gap: 14px;
             padding: 14px 0;
-            border-bottom: 1px solid #e7ece8;
+            border-bottom: 1px solid #17352a;
         }
 
         .stage-row:last-child {
@@ -869,12 +928,15 @@ def homepage():
         }
 
         .stage-number {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
             display: grid;
             place-items: center;
             border-radius: 50%;
-            background: #e6f2e9;
+            background: rgba(79,140,255,.1);
+            color: #4f8cff;
+            font-size: 11px;
             font-weight: 800;
         }
 
@@ -882,45 +944,49 @@ def homepage():
             flex: 1;
         }
 
-        .stage-info strong,
-        .stage-info span {
+        .stage-info strong {
             display: block;
+            color: #fff;
+            font-size: 13px;
         }
 
         .stage-info span {
+            display: block;
             color: #718078;
-            font-size: 12px;
+            font-size: 10px;
+            margin-top: 2px;
         }
 
         .stage-status {
-            font-size: 11px;
+            font-size: 9px;
             font-weight: 700;
-            padding: 5px 9px;
+            padding: 5px 8px;
             border-radius: 15px;
-            background: #eef2ef;
+            background: #11221b;
+            color: #829189;
         }
 
         .stage-status.active {
-            background: #dff2e5;
-            color: #24663b;
+            background: rgba(69,212,138,.1);
+            color: #45d48a;
         }
 
         .stage-status.completed {
-            background: #e8edf0;
-            color: #45525a;
+            background: rgba(79,140,255,.1);
+            color: #4f8cff;
         }
 
         .stage-status.pending {
-            background: #f3f0e3;
-            color: #756324;
+            background: rgba(255,179,64,.1);
+            color: #ffb340;
         }
 
         .alert-row {
             display: flex;
             align-items: center;
-            gap: 14px;
-            padding: 15px 0;
-            border-bottom: 1px solid #e7ece8;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid #17352a;
         }
 
         .alert-row:last-child {
@@ -928,82 +994,100 @@ def homepage():
         }
 
         .alert-severity {
-            min-width: 55px;
+            min-width: 50px;
             text-align: center;
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 8px;
+            font-weight: 800;
             padding: 5px;
             border-radius: 12px;
         }
 
         .alert-severity.medium {
-            background: #fff1d6;
-            color: #805d17;
+            background: rgba(255,179,64,.1);
+            color: #ffb340;
         }
 
         .alert-severity.low {
-            background: #e9eef2;
-            color: #53626d;
+            background: rgba(79,140,255,.1);
+            color: #4f8cff;
         }
 
         .alert-message {
             flex: 1;
         }
 
-        .alert-message strong,
-        .alert-message span {
+        .alert-message strong {
             display: block;
-        }
-
-        .alert-message span {
-            color: #748078;
-            font-size: 12px;
-        }
-
-        .alert-status {
-            color: #69756e;
+            color: #dce4df;
             font-size: 11px;
         }
 
+        .alert-message span {
+            display: block;
+            color: #65766e;
+            font-size: 9px;
+        }
+
+        .alert-status {
+            color: #65766e;
+            font-size: 9px;
+        }
+
         .security {
-            background: #102218;
-            color: white;
+            background: #030d08;
+            border-top: 1px solid #10281e;
         }
 
         .security-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            gap: 35px;
             align-items: start;
         }
 
+        .security h2 {
+            color: #fff;
+            font-size: 30px;
+            letter-spacing: -1px;
+        }
+
         .security p {
-            color: #c9d8cd;
+            color: #829189;
+            font-size: 13px;
+            line-height: 1.7;
         }
 
         .password-box {
-            background: white;
-            border-radius: 12px;
+            background: #061812;
+            border: 1px solid #17352a;
+            border-radius: 14px;
             padding: 24px;
-            color: #17231b;
+            color: #fff;
         }
 
         .password-box input {
             width: 100%;
-            padding: 13px;
-            border: 1px solid #ccd7cf;
-            border-radius: 7px;
+            padding: 13px 14px;
+            border: 1px solid #274439;
+            background: #030d08;
+            color: white;
+            border-radius: 8px;
             margin-bottom: 12px;
-            font-size: 15px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .password-box input:focus {
+            border-color: #4f8cff;
         }
 
         .password-box button {
             width: 100%;
             padding: 13px;
             border: 0;
-            border-radius: 7px;
-            background: #78c091;
-            color: #102218;
+            border-radius: 8px;
+            background: #1769ff;
+            color: white;
             font-weight: 800;
             cursor: pointer;
         }
@@ -1014,188 +1098,320 @@ def homepage():
         }
 
         .result-score {
-            font-size: 32px;
+            font-size: 30px;
             font-weight: 800;
+            color: #4f8cff;
         }
 
         .result-strength {
+            color: #45d48a;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin: 5px 0 10px;
         }
 
         .result-list {
             padding-left: 18px;
-            color: #657269;
-            font-size: 13px;
+            color: #829189;
+            font-size: 11px;
         }
 
         footer {
-            background: #0b1810;
-            color: #aebbb2;
+            background: #010604;
+            color: #52615a;
+            border-top: 1px solid #10241b;
             text-align: center;
             padding: 30px;
-            font-size: 13px;
+            font-size: 11px;
         }
 
-        @media (max-width: 900px) {
-            .stats,
-            .sites-grid {
+        @media (max-width: 850px) {
+
+            .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
 
+            .stat-card:nth-child(2) {
+                border-right: 0;
+            }
+
+            .sites-grid,
             .dashboard-grid,
             .security-grid {
                 grid-template-columns: 1fr;
             }
+        }
+
+        @media (max-width: 600px) {
 
             .nav-links {
                 display: none;
             }
-        }
 
-        @media (max-width: 600px) {
-            .stats,
-            .sites-grid {
+            .hero {
+                padding-top: 55px;
+                padding-bottom: 90px;
+            }
+
+            .hero h1 {
+                font-size: 46px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats {
                 grid-template-columns: 1fr;
             }
 
-            .hero {
-                padding: 55px 6%;
+            .stat-card {
+                border-right: 0;
+                border-bottom: 1px solid #17352a;
+            }
+
+            .stat-card:last-child {
+                border-bottom: 0;
             }
         }
+
     </style>
+
 </head>
 
 <body>
 
 <nav>
-    <div class="logo">Mine<span>Core</span></div>
+
+    <div class="logo">
+        Mine<span>Core</span>
+    </div>
 
     <ul class="nav-links">
-        <li><a href="#sites">Sites</a></li>
-        <li><a href="#operations">Operations</a></li>
-        <li><a href="#security">Security</a></li>
+        <li>
+            <a href="#sites">Sites</a>
+        </li>
+
+        <li>
+            <a href="#operations">Operations</a>
+        </li>
+
+        <li>
+            <a href="#security">Security</a>
+        </li>
     </ul>
+
 </nav>
 
 <header class="hero">
-    <div class="hero-content">
-        <div class="eyebrow">COAL MINING OPERATIONS PLATFORM</div>
 
-        <h1>Smarter Mining.<br>Safer Operations.</h1>
+    <div class="hero-content">
+
+        <div class="eyebrow">
+            MINING OPERATIONS PLATFORM
+        </div>
+
+        <h1>
+            Smarter software for<br>
+            <span class="blue">mining operations.</span>
+        </h1>
 
         <p>
-            MineCore provides a unified platform for monitoring mining
-            operations, managing site safety, understanding policies,
-            and improving security.
+            Monitor production, manage mining stages, track equipment and
+            maintain operational safety across your mining sites from one
+            intelligent platform.
         </p>
 
         <div class="hero-buttons">
-            <a class="button button-primary" href="#sites">
+
+            <a
+                class="button button-primary"
+                href="#operations"
+            >
+                Explore Operations →
+            </a>
+
+            <a
+                class="button button-secondary"
+                href="#sites"
+            >
                 View Mining Sites
             </a>
 
-            <a class="button button-secondary" href="#operations">
-                View Operations
-            </a>
         </div>
+
     </div>
+
 </header>
 
 <main>
 
     <div class="container">
+
         <div class="stats">
 
             <div class="stat-card">
-                <div class="stat-label">TOTAL PRODUCTION</div>
-                <div class="stat-value">__TOTAL_PRODUCTION__ tons</div>
+
+                <div class="stat-label">
+                    TODAY'S PRODUCTION
+                </div>
+
+                <div class="stat-value">
+                    __TOTAL_PRODUCTION__ TONS
+                </div>
+
             </div>
 
             <div class="stat-card">
-                <div class="stat-label">ACTIVE SITES</div>
-                <div class="stat-value">__ACTIVE_SITES__</div>
+
+                <div class="stat-label">
+                    ACTIVE SITES
+                </div>
+
+                <div class="stat-value">
+                    __ACTIVE_SITES__
+                </div>
+
             </div>
 
             <div class="stat-card">
-                <div class="stat-label">OPEN ALERTS</div>
-                <div class="stat-value">__OPEN_ALERTS__</div>
+
+                <div class="stat-label">
+                    OPEN ALERTS
+                </div>
+
+                <div class="stat-value">
+                    __OPEN_ALERTS__
+                </div>
+
             </div>
 
             <div class="stat-card">
-                <div class="stat-label">EQUIPMENT OPERATIONAL</div>
+
+                <div class="stat-label">
+                    EQUIPMENT OPERATIONAL
+                </div>
+
                 <div class="stat-value">
                     __OPERATIONAL_EQUIPMENT__/__TOTAL_EQUIPMENT__
                 </div>
+
             </div>
 
         </div>
+
     </div>
 
     <section id="sites">
+
         <div class="container">
 
             <div class="section-heading">
-                <h2>Mining Sites</h2>
-                <p>Monitor production, operational status, and safety.</p>
+
+                <h2>
+                    Mining Sites
+                </h2>
+
+                <p>
+                    Live overview of your active mining operations.
+                </p>
+
             </div>
 
             <div class="sites-grid">
+
                 __SITE_CARDS__
+
             </div>
 
         </div>
+
     </section>
 
     <section id="operations">
+
         <div class="container">
 
             <div class="section-heading">
-                <h2>Operations Overview</h2>
+
+                <h2>
+                    Live Operations
+                </h2>
+
                 <p>
-                    Track the complete mining lifecycle from exploration
-                    through reclamation.
+                    Track the mining lifecycle and current safety status.
                 </p>
+
             </div>
 
             <div class="dashboard-grid">
 
                 <div class="panel">
-                    <h3>Mining Lifecycle</h3>
+
+                    <h3>
+                        Mining Lifecycle
+                    </h3>
+
                     __STAGE_ROWS__
+
                 </div>
 
                 <div class="panel">
-                    <h3>Safety Alerts</h3>
+
+                    <h3>
+                        Safety Alerts
+                    </h3>
+
                     __ALERT_ROWS__
 
                     <div style="margin-top: 20px;">
-                        <a href="/sites/1#alerts">
+
+                        <a
+                            href="/sites/1#alerts"
+                            style="
+                                color:#4f8cff;
+                                font-size:10px;
+                                font-weight:700;
+                            "
+                        >
                             View site alerts →
                         </a>
+
                     </div>
+
                 </div>
 
             </div>
 
         </div>
+
     </section>
 
-    <section id="security" class="security">
+    <section
+        id="security"
+        class="security"
+    >
+
         <div class="container">
 
             <div class="security-grid">
 
                 <div>
-                    <div class="eyebrow">SECURITY MODULE</div>
 
-                    <h2>Password Security Analyzer</h2>
+                    <div class="eyebrow">
+                        SECURITY MODULE
+                    </div>
 
-                    <p style="margin-top: 12px;">
+                    <h2>
+                        Password Security Analyzer
+                    </h2>
+
+                    <p style="margin-top: 14px;">
                         Analyze password strength against common security
                         requirements and receive recommendations for
                         improving password security.
                     </p>
+
                 </div>
 
                 <div class="password-box">
@@ -1212,7 +1428,10 @@ def homepage():
 
                     <div id="passwordResult">
 
-                        <div class="result-score" id="passwordScore">
+                        <div
+                            class="result-score"
+                            id="passwordScore"
+                        >
                             0/100
                         </div>
 
@@ -1233,6 +1452,7 @@ def homepage():
             </div>
 
         </div>
+
     </section>
 
 </main>
@@ -1242,78 +1462,133 @@ def homepage():
 </footer>
 
 <script>
+
 async function analyzePassword() {
-    const passwordInput = document.getElementById("passwordInput");
-    const result = document.getElementById("passwordResult");
-    const score = document.getElementById("passwordScore");
-    const strength = document.getElementById("passwordStrength");
+
+    const passwordInput =
+        document.getElementById("passwordInput");
+
+    const result =
+        document.getElementById("passwordResult");
+
+    const score =
+        document.getElementById("passwordScore");
+
+    const strength =
+        document.getElementById("passwordStrength");
+
     const recommendations =
         document.getElementById("passwordRecommendations");
 
     const password = passwordInput.value;
 
     if (!password) {
+
         result.style.display = "block";
+
         score.textContent = "0/100";
-        strength.textContent = "Please enter a password.";
+
+        strength.textContent =
+            "Please enter a password.";
+
         recommendations.innerHTML = "";
+
         return;
     }
 
     try {
-        const response = await fetch("/api/security/password", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                password: password
-            })
-        });
+
+        const response = await fetch(
+            "/api/security/password",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    password: password
+                })
+            }
+        );
 
         if (!response.ok) {
-            throw new Error("Password analysis failed.");
+            throw new Error(
+                "Password analysis failed."
+            );
         }
 
         const data = await response.json();
 
         result.style.display = "block";
 
-        score.textContent = data.score + "/100";
-        strength.textContent = data.strength;
+        score.textContent =
+            data.score + "/100";
+
+        strength.textContent =
+            data.strength;
 
         recommendations.innerHTML = "";
 
         if (data.recommendations.length === 0) {
-            const item = document.createElement("li");
-            item.textContent = "Password satisfies the required policy.";
+
+            const item =
+                document.createElement("li");
+
+            item.textContent =
+                "Password satisfies the required policy.";
+
             recommendations.appendChild(item);
+
         } else {
-            data.recommendations.forEach(function(itemText) {
-                const item = document.createElement("li");
-                item.textContent = itemText;
-                recommendations.appendChild(item);
-            });
+
+            data.recommendations.forEach(
+                function(itemText) {
+
+                    const item =
+                        document.createElement("li");
+
+                    item.textContent =
+                        itemText;
+
+                    recommendations.appendChild(item);
+                }
+            );
         }
 
     } catch (error) {
+
         result.style.display = "block";
+
         score.textContent = "Error";
-        strength.textContent = error.message;
+
+        strength.textContent =
+            error.message;
+
         recommendations.innerHTML = "";
     }
 }
+
 </script>
 
 </body>
+
 </html>
 """
 
     html = (
         html
-        .replace("__TOTAL_PRODUCTION__", f"{total_production:,}")
-        .replace("__ACTIVE_SITES__", str(active_sites))
-        .replace("__OPEN_ALERTS__", str(open_alerts))
+        .replace(
+            "__TOTAL_PRODUCTION__",
+            f"{total_production:,}",
+        )
+        .replace(
+            "__ACTIVE_SITES__",
+            str(active_sites),
+        )
+        .replace(
+            "__OPEN_ALERTS__",
+            str(open_alerts),
+        )
         .replace(
             "__OPERATIONAL_EQUIPMENT__",
             str(operational_equipment),
@@ -1326,17 +1601,24 @@ async function analyzePassword() {
             "__EQUIPMENT_PERCENTAGE__",
             str(equipment_percentage),
         )
-        .replace("__SITE_CARDS__", site_cards)
-        .replace("__STAGE_ROWS__", stage_rows)
-        .replace("__ALERT_ROWS__", alert_rows)
+        .replace(
+            "__SITE_CARDS__",
+            site_cards,
+        )
+        .replace(
+            "__STAGE_ROWS__",
+            stage_rows,
+        )
+        .replace(
+            "__ALERT_ROWS__",
+            alert_rows,
+        )
     )
 
     return HTMLResponse(content=html)
 
 
-# ============================================================
-# INDIVIDUAL SITE DASHBOARD
-# ============================================================
+# Individual Site Dashboard
 
 @app.get("/sites/{site_id}", response_class=HTMLResponse)
 def site_dashboard(site_id: int):
@@ -1367,11 +1649,15 @@ def site_dashboard(site_id: int):
             padding: 0;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: Arial, Helvetica, sans-serif;
-            background: #f4f7f5;
-            color: #17231b;
-            line-height: 1.6;
+            background: #020b07;
+            color: #f5f7f6;
+            line-height: 1.5;
         }
 
         a {
@@ -1380,197 +1666,291 @@ def site_dashboard(site_id: int):
         }
 
         nav {
-            background: #102218;
-            color: white;
-            padding: 18px 6%;
+            background: #030b08;
+            border-bottom: 1px solid rgba(255,255,255,.05);
+            padding: 22px max(6%, calc((100vw - 1080px) / 2));
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
         }
 
         .logo {
-            font-size: 24px;
+            font-size: 19px;
             font-weight: 800;
+            color: #fff;
         }
 
         .logo span {
-            color: #78c091;
+            color: #4f8cff;
         }
 
         .back {
-            color: #dce8df;
-            font-size: 14px;
+            color: #aeb9b4;
+            font-size: 12px;
+        }
+
+        .back:hover {
+            color: #fff;
         }
 
         .hero {
-            background: #183524;
-            color: white;
-            padding: 55px 6%;
+            background:
+                radial-gradient(
+                    circle at 75% 35%,
+                    rgba(24, 80, 55, .12),
+                    transparent 35%
+                ),
+                #020b07;
+
+            padding:
+                60px
+                max(6%, calc((100vw - 1080px) / 2))
+                85px;
         }
 
         .container {
-            width: min(1180px, 88%);
+            width: min(1080px, 88%);
             margin: 0 auto;
         }
 
         .eyebrow {
-            color: #8bd19f;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
+            color: #4f8cff;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+            margin-bottom: 14px;
         }
 
         .hero h1 {
-            font-size: clamp(38px, 5vw, 58px);
-            line-height: 1.05;
-            margin: 8px 0 12px;
+            color: #fff;
+            font-size: clamp(45px, 6vw, 70px);
+            line-height: .98;
+            letter-spacing: -3px;
+            margin-bottom: 16px;
         }
 
         .hero p {
-            color: #d6e4da;
+            color: #a8b5ae;
+            font-size: 14px;
         }
 
         .content {
-            padding: 45px 0 70px;
+            padding: 0 0 75px;
         }
 
         .stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
+            background: #061812;
+            border: 1px solid #17352a;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: -45px;
+            position: relative;
+            z-index: 2;
         }
 
         .stat {
-            background: white;
-            border: 1px solid #dfe7e1;
-            border-radius: 12px;
-            padding: 20px;
+            padding: 23px 20px;
+            border-right: 1px solid #17352a;
+        }
+
+        .stat:last-child {
+            border-right: 0;
         }
 
         .stat-label {
-            color: #6d7a72;
-            font-size: 12px;
+            color: #65766e;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .5px;
         }
 
         .stat-value {
-            font-size: 25px;
+            color: #fff;
+            font-size: 20px;
             font-weight: 800;
-            margin-top: 4px;
+            margin-top: 7px;
+        }
+
+        .stat:nth-child(1) .stat-value {
+            color: #45d48a;
+        }
+
+        .stat:nth-child(2) .stat-value {
+            color: #45d48a;
+        }
+
+        .stat:nth-child(3) .stat-value {
+            color: #4f8cff;
         }
 
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 22px;
+            gap: 15px;
+            margin-top: 22px;
         }
 
         .panel {
-            background: white;
-            border: 1px solid #dfe7e1;
-            border-radius: 12px;
+            background: #061812;
+            border: 1px solid #17352a;
+            border-radius: 14px;
             padding: 24px;
         }
 
         .panel h2 {
-            font-size: 21px;
+            color: #fff;
+            font-size: 20px;
             margin-bottom: 18px;
         }
 
         .stage-box {
-            background: #edf6ef;
+            background: rgba(79,140,255,.06);
+            border: 1px solid #17352a;
             border-radius: 10px;
             padding: 18px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .stage-box strong {
             display: block;
-            font-size: 18px;
+            color: #4f8cff;
+            font-size: 17px;
+            margin-bottom: 5px;
         }
 
         .stage-box span {
-            color: #607066;
-            font-size: 13px;
+            color: #829189;
+            font-size: 12px;
         }
 
         .check {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
             padding: 13px 0;
-            border-bottom: 1px solid #e6ece8;
+            border-bottom: 1px solid #17352a;
+            color: #cbd5cf;
+            font-size: 12px;
         }
 
         .check:last-child {
             border-bottom: 0;
         }
 
+        .check label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .check input {
+            accent-color: #4f8cff;
+        }
+
         .check-status {
-            font-size: 11px;
+            font-size: 9px;
             font-weight: 700;
-            background: #e6f3e9;
-            color: #27623a;
-            padding: 5px 9px;
+            background: rgba(69,212,138,.1);
+            color: #45d48a;
+            padding: 5px 8px;
             border-radius: 15px;
         }
 
         .alert {
-            border-left: 4px solid #c69532;
-            background: #fff8e9;
+            border: 1px solid #17352a;
+            border-left: 3px solid #ffb340;
+            background: rgba(255,179,64,.04);
             padding: 14px;
-            margin-bottom: 12px;
-            border-radius: 6px;
+            margin-bottom: 10px;
+            border-radius: 7px;
         }
 
         .alert strong {
             display: block;
-        }
-
-        .alert span {
-            color: #6f674f;
+            color: #dce4df;
             font-size: 12px;
         }
 
+        .alert span {
+            color: #829189;
+            font-size: 10px;
+        }
+
         .empty {
-            color: #738078;
-            font-size: 14px;
+            color: #65766e;
+            font-size: 12px;
         }
 
         .policy-button {
             display: inline-block;
             margin-top: 18px;
-            padding: 11px 16px;
-            border-radius: 7px;
-            background: #183524;
+            padding: 11px 17px;
+            border-radius: 22px;
+            background: #1769ff;
             color: white;
-            font-weight: 700;
+            font-weight: 800;
+            font-size: 11px;
             border: 0;
             cursor: pointer;
+            box-shadow: 0 8px 25px rgba(23,105,255,.2);
         }
 
         #policyResult {
             margin-top: 15px;
-            background: #f2f6f3;
+            background: #030d08;
+            border: 1px solid #17352a;
             border-radius: 8px;
             padding: 15px;
             display: none;
-            font-size: 13px;
+            color: #829189;
+            font-size: 11px;
+        }
+
+        #policyResult strong {
+            color: #4f8cff;
         }
 
         footer {
-            background: #0b1810;
-            color: #aebbb2;
+            background: #010604;
+            color: #52615a;
+            border-top: 1px solid #10241b;
             text-align: center;
             padding: 30px;
-            font-size: 13px;
+            font-size: 11px;
         }
 
-        @media (max-width: 800px) {
+        @media (max-width: 850px) {
+
+            .stats,
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
             .stats,
             .grid {
                 grid-template-columns: 1fr;
             }
+
+            .stat {
+                border-right: 0;
+                border-bottom: 1px solid #17352a;
+            }
+
+            .stat:last-child {
+                border-bottom: 0;
+            }
+
+            .hero h1 {
+                font-size: 45px;
+            }
+
         }
 
     </style>
@@ -1585,7 +1965,10 @@ def site_dashboard(site_id: int):
         Mine<span>Core</span>
     </div>
 
-    <a class="back" href="/">
+    <a
+        class="back"
+        href="/"
+    >
         ← Back to Dashboard
     </a>
 
@@ -1599,7 +1982,9 @@ def site_dashboard(site_id: int):
             MINING SITE
         </div>
 
-        <h1>__SITE_NAME__</h1>
+        <h1>
+            __SITE_NAME__
+        </h1>
 
         <p>
             __SITE_LOCATION__
@@ -1616,26 +2001,37 @@ def site_dashboard(site_id: int):
         <div class="stats">
 
             <div class="stat">
+
                 <div class="stat-label">
                     STATUS
                 </div>
 
-                <div class="stat-value" id="siteStatus">
+                <div
+                    class="stat-value"
+                    id="siteStatus"
+                >
                     __SITE_STATUS__
                 </div>
+
             </div>
 
             <div class="stat">
+
                 <div class="stat-label">
                     SAFETY
                 </div>
 
-                <div class="stat-value" id="safetyStatus">
+                <div
+                    class="stat-value"
+                    id="safetyStatus"
+                >
                     __SAFETY_STATUS__
                 </div>
+
             </div>
 
             <div class="stat">
+
                 <div class="stat-label">
                     PRODUCTION
                 </div>
@@ -1643,9 +2039,11 @@ def site_dashboard(site_id: int):
                 <div class="stat-value">
                     __PRODUCTION__ tons
                 </div>
+
             </div>
 
             <div class="stat">
+
                 <div class="stat-label">
                     CURRENT STAGE
                 </div>
@@ -1653,6 +2051,7 @@ def site_dashboard(site_id: int):
                 <div class="stat-value">
                     __STAGE_NAME__
                 </div>
+
             </div>
 
         </div>
@@ -1661,7 +2060,9 @@ def site_dashboard(site_id: int):
 
             <div class="panel">
 
-                <h2>Current Operation</h2>
+                <h2>
+                    Current Operation
+                </h2>
 
                 <div class="stage-box">
 
@@ -1675,49 +2076,72 @@ def site_dashboard(site_id: int):
 
                 </div>
 
-                <h2>Equipment</h2>
+                <h2>
+                    Equipment
+                </h2>
 
                 <div id="equipmentList">
+
                     <div class="empty">
                         Loading equipment...
                     </div>
+
                 </div>
 
             </div>
 
-            <div class="panel" id="alerts">
+            <div
+                class="panel"
+                id="alerts"
+            >
 
-                <h2>Safety Alerts</h2>
+                <h2>
+                    Safety Alerts
+                </h2>
 
                 <div id="alertsList">
+
                     <div class="empty">
                         Loading alerts...
                     </div>
+
                 </div>
 
             </div>
 
         </div>
 
-        <div class="panel" style="margin-top: 22px;">
+        <div
+            class="panel"
+            style="margin-top: 15px;"
+        >
 
-            <h2>Safety Checklist</h2>
+            <h2>
+                Safety Checklist
+            </h2>
 
             <div id="safetyChecklist">
+
                 <div class="empty">
                     Loading safety information...
                 </div>
+
             </div>
 
         </div>
 
-        <div class="panel" style="margin-top: 22px;">
+        <div
+            class="panel"
+            style="margin-top: 15px;"
+        >
 
-            <h2>Policy Context</h2>
+            <h2>
+                Policy Context
+            </h2>
 
             <p class="empty">
                 Use the policy context to connect this mining stage
-                with the relevant operational and safety requirements.
+                with relevant operational and safety requirements.
             </p>
 
             <button
@@ -1743,10 +2167,15 @@ def site_dashboard(site_id: int):
 
 const siteId = __SITE_ID__;
 
+const stageId = __STAGE_ID__;
+
+
 function escapeHtml(value) {
 
     const div = document.createElement("div");
-    div.textContent = value == null ? "" : value;
+
+    div.textContent =
+        value == null ? "" : value;
 
     return div.innerHTML;
 }
@@ -1761,28 +2190,43 @@ async function loadDashboard() {
         );
 
         if (!response.ok) {
-            throw new Error("Dashboard request failed.");
+            throw new Error(
+                "Dashboard request failed."
+            );
         }
 
         const data = await response.json();
 
         const equipmentList =
-            document.getElementById("equipmentList");
+            document.getElementById(
+                "equipmentList"
+            );
 
-        if (data.equipment && data.equipment.length > 0) {
+        if (
+            data.equipment &&
+            data.equipment.length > 0
+        ) {
 
-            equipmentList.innerHTML = data.equipment
-                .map(function(item) {
-                    return `
-                        <div class="check">
-                            <span>${escapeHtml(item)}</span>
-                            <span class="check-status">
-                                Operational
-                            </span>
-                        </div>
-                    `;
-                })
-                .join("");
+            equipmentList.innerHTML =
+                data.equipment
+                    .map(function(item) {
+
+                        return `
+                            <div class="check">
+
+                                <span>
+                                    ${escapeHtml(item)}
+                                </span>
+
+                                <span class="check-status">
+                                    Operational
+                                </span>
+
+                            </div>
+                        `;
+
+                    })
+                    .join("");
 
         } else {
 
@@ -1791,29 +2235,46 @@ async function loadDashboard() {
 
         }
 
+
         const alertsList =
-            document.getElementById("alertsList");
+            document.getElementById(
+                "alertsList"
+            );
 
-        if (data.alerts && data.alerts.length > 0) {
+        if (
+            data.alerts &&
+            data.alerts.length > 0
+        ) {
 
-            alertsList.innerHTML = data.alerts
-                .map(function(alert) {
-                    return `
-                        <div class="alert">
-                            <strong>
-                                ${escapeHtml(alert.message)}
-                            </strong>
+            alertsList.innerHTML =
+                data.alerts
+                    .map(function(alert) {
 
-                            <span>
-                                Severity:
-                                ${escapeHtml(alert.severity)}
-                                · Status:
-                                ${escapeHtml(alert.status)}
-                            </span>
-                        </div>
-                    `;
-                })
-                .join("");
+                        return `
+                            <div class="alert">
+
+                                <strong>
+                                    ${escapeHtml(
+                                        alert.message
+                                    )}
+                                </strong>
+
+                                <span>
+                                    Severity:
+                                    ${escapeHtml(
+                                        alert.severity
+                                    )}
+                                    · Status:
+                                    ${escapeHtml(
+                                        alert.status
+                                    )}
+                                </span>
+
+                            </div>
+                        `;
+
+                    })
+                    .join("");
 
         } else {
 
@@ -1824,10 +2285,14 @@ async function loadDashboard() {
 
     } catch (error) {
 
-        document.getElementById("equipmentList").innerHTML =
+        document.getElementById(
+            "equipmentList"
+        ).innerHTML =
             '<div class="empty">Unable to load equipment.</div>';
 
-        document.getElementById("alertsList").innerHTML =
+        document.getElementById(
+            "alertsList"
+        ).innerHTML =
             '<div class="empty">Unable to load alerts.</div>';
 
         console.error(error);
@@ -1841,45 +2306,60 @@ async function loadSafety() {
 
         const response = await fetch(
             "/api/mining/stages/" +
-            __STAGE_ID__ +
+            stageId +
             "/safety"
         );
 
         if (!response.ok) {
-            throw new Error("Safety request failed.");
+            throw new Error(
+                "Safety request failed."
+            );
         }
 
         const data = await response.json();
 
         const checklist =
-            document.getElementById("safetyChecklist");
+            document.getElementById(
+                "safetyChecklist"
+            );
 
-        if (data.checks && data.checks.length > 0) {
+        if (
+            data.checks &&
+            data.checks.length > 0
+        ) {
 
-            checklist.innerHTML = data.checks
-                .map(function(item, index) {
+            checklist.innerHTML =
+                data.checks
+                    .map(function(item, index) {
 
-                    return `
-                        <div class="check">
+                        return `
+                            <div class="check">
 
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    data-check-index="${index}"
-                                >
+                                <label>
 
-                                ${escapeHtml(item.name)}
-                            </label>
+                                    <input
+                                        type="checkbox"
+                                        data-check-index="${index}"
+                                    >
 
-                            <span class="check-status">
-                                ${escapeHtml(item.status)}
-                            </span>
+                                    ${escapeHtml(
+                                        item.name
+                                    )}
 
-                        </div>
-                    `;
+                                </label>
 
-                })
-                .join("");
+                                <span class="check-status">
+                                    ${escapeHtml(
+                                        item.status
+                                    )}
+                                </span>
+
+                            </div>
+                        `;
+
+                    })
+                    .join("");
+
 
             document
                 .querySelectorAll(
@@ -1899,10 +2379,12 @@ async function loadSafety() {
                     checkbox.addEventListener(
                         "change",
                         function() {
+
                             localStorage.setItem(
                                 key,
                                 checkbox.checked
                             );
+
                         }
                     );
 
@@ -1917,7 +2399,9 @@ async function loadSafety() {
 
     } catch (error) {
 
-        document.getElementById("safetyChecklist").innerHTML =
+        document.getElementById(
+            "safetyChecklist"
+        ).innerHTML =
             '<div class="empty">Unable to load safety information.</div>';
 
         console.error(error);
@@ -1928,21 +2412,27 @@ async function loadSafety() {
 async function loadPolicyContext() {
 
     const result =
-        document.getElementById("policyResult");
+        document.getElementById(
+            "policyResult"
+        );
 
     result.style.display = "block";
-    result.textContent = "Loading policy context...";
+
+    result.textContent =
+        "Loading policy context...";
 
     try {
 
         const response = await fetch(
             "/api/mining/stages/" +
-            __STAGE_ID__ +
+            stageId +
             "/policy-context"
         );
 
         if (!response.ok) {
-            throw new Error("Policy request failed.");
+            throw new Error(
+                "Policy request failed."
+            );
         }
 
         const data = await response.json();
@@ -1953,7 +2443,9 @@ async function loadPolicyContext() {
             </strong>
 
             <p style="margin-top: 8px;">
-                ${escapeHtml(data.policy_context)}
+                ${escapeHtml(
+                    data.policy_context
+                )}
             </p>
         `;
 
@@ -1961,7 +2453,9 @@ async function loadPolicyContext() {
             window.MineCore &&
             typeof window.MineCore.askPolicy === "function"
         ) {
+
             window.MineCore.askPolicy(data);
+
         }
 
     } catch (error) {
@@ -1974,31 +2468,49 @@ async function loadPolicyContext() {
 }
 
 
-document.addEventListener(
+window.addEventListener(
     "DOMContentLoaded",
     function() {
+
         loadDashboard();
         loadSafety();
+
     }
 );
 
 </script>
 
 </body>
+
 </html>
 """
 
     html = (
         html
-        .replace("__SITE_ID__", str(site.id))
-        .replace("__SITE_NAME__", escape_html(site.name))
-        .replace("__SITE_LOCATION__", escape_html(site.location))
-        .replace("__SITE_STATUS__", escape_html(site.status))
+        .replace(
+            "__SITE_ID__",
+            str(site.id),
+        )
+        .replace(
+            "__SITE_NAME__",
+            escape_html(site.name),
+        )
+        .replace(
+            "__SITE_LOCATION__",
+            escape_html(site.location),
+        )
+        .replace(
+            "__SITE_STATUS__",
+            escape_html(site.status),
+        )
         .replace(
             "__SAFETY_STATUS__",
             escape_html(site.safety_status),
         )
-        .replace("__PRODUCTION__", f"{site.production:,}")
+        .replace(
+            "__PRODUCTION__",
+            f"{site.production:,}",
+        )
         .replace(
             "__STAGE_NAME__",
             escape_html(stage.name),
@@ -2007,7 +2519,10 @@ document.addEventListener(
             "__STAGE_DESCRIPTION__",
             escape_html(stage.description),
         )
-        .replace("__STAGE_ID__", str(stage.id))
+        .replace(
+            "__STAGE_ID__",
+            str(stage.id),
+        )
     )
 
     return HTMLResponse(content=html)
