@@ -467,6 +467,12 @@ Future development can include:
 
 ---
 
+
+## 👥 Collaborators
+
+* [Victor Elias](https://github.com/victorelias471-cloud)
+* [Adeemma02](https://github.com/Adeemma02)
+
 ## 📜 License
 
 This project is intended for **educational, demonstration, and hackathon purposes**.
