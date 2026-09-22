@@ -1,6 +1,7 @@
 # ⛏️ MineCore — Coal Mining Operations Platform
 
 > **A smart web-based platform for monitoring, managing, and improving coal mining operations.**
+<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/fce30db2-829c-42bb-ab0e-072cd6d005a0" />
 
 MineCore provides a centralized platform for monitoring mining sites, tracking production, managing mining stages, monitoring equipment, and maintaining operational safety.
 
@@ -125,6 +126,10 @@ Passwords receive a strength classification such as:
 * 🟠 Moderate
 * 🟢 Strong
 * 🔵 Very Strong
+
+  <img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/1d18c3fd-32d2-43a0-afcb-d1e28189624e" />
+<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/a0494fb9-08df-4eda-8459-f70af1873e7f" />
+
 
 The analyzer also indicates whether the password satisfies the defined security policy.
 
@@ -307,6 +312,7 @@ The deployed demo currently contains multiple mining sites representing differen
 | 🏭 Site B | Mining Zone B | Extraction      | Active         |   980 tons |
 | 🏭 Site C | Mining Zone C | Coal Processing | Processing     |   760 tons |
 | 🏭 Site D | Mining Zone D | Transportation  | Transportation | 1,120 tons |
+<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/516f44fe-2060-4c25-bcef-71364afa408e" />
 
 **Total demo production:** 4,110 tons
 
